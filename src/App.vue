@@ -3,7 +3,7 @@
     <line-chart v-if="type = 'line'"
       :dataset="dataset"
       :size="size"
-      :axes="axes">
+      :xyaxis="xyaxis">
     </line-chart>
   </div>
 </template>
@@ -17,82 +17,50 @@ export default {
   props: {
     dataset: [Object, Array],
     chartType: [Array, String],
+    sizeProp: [Object, Array],
   },
   data () {
     return {
       size: {
         width: 400,
         height: 200,
+        margins: 25,
       },
-      axes: undefined
+      xyaxis: undefined
     }
   },
   methods: {
     createAxes: function() {
-      
-      /*let width = this.get("width");
-      let h_adj = (height - margins.top - margins.bottom);
-      let w_adj = (width - margins.left - margins.right);
-      let scales = this.get("scales");
-      let axes = this.get("axes");
-      let labels = this.get("labels");
-      let names = this.get("data").map((v) => v.name);
+      let h = this.size.height - (2 * this.size.margins)
+      let w = this.size.width - (2 * this.size.margins)
+      let y = d3.scaleLinear()
+          .domain([0, d3.max(this.dataset.y)])
+          .range([this.size.height - this.size.margins, 0])
+      let x = d3.scaleLinear()
+          .domain([0, d3.max(this.dataset.x)])
+          .range([0, w])
+      let yaxis = d3.axisLeft(y)
+          .ticks(4)
+          .tickFormat((d) => d)
+      let xaxis = d3.axisBottom(x)
+          .ticks(4)
+          .tickFormat((d) => d)
 
-      if (orientation === "vertical") {
-        scales.y = d3.scaleLinear()
-          .domain([0,this.get("max")])
-          .range([h_adj, 0]);
-        scales.x = d3.scaleBand()
-          .domain(names)
-          .rangeRound([0, w_adj])
-          .padding(0.1);
-        axes.y = d3.axisLeft(scales.y).ticks(10).tickFormat((d) => "$"+d);
-        axes.x = d3.axisBottom(scales.x);
-      } else if (orientation === "horizontal") {
-        scales.y = d3.scaleBand()
-          .domain(names)
-          .rangeRound([0, h_adj])
-          .padding(0.1);
-        scales.x = d3.scaleLinear()
-          .domain([0, this.get("max")])
-          .range([0, w_adj])
-        axes.y = d3.axisLeft(scales.y);
-        axes.x = d3.axisBottom(scales.x).ticks(10).tickFormat((d) => "$"+d);
+      this.size.adj_height = h
+      this.size.adj_width = w
+      this.xyaxis = {
+        scales: {x: x, y: y},
+        axis: {x: xaxis, y: yaxis}
       }
-      
-      svg.append("g")
-          .attr("class", "y axis")
-          .call(axes.y)
-        .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 10) // thsees are two specific. should change.
-          .attr("dy", ".5em")
-          .style("text-anchor", "end")
-          .text(labels.y);
-
-      svg.append("g")
-          .attr("class", "x axis")
-          .attr("transform", "translate(0," + h_adj + ")")
-          .call(axes.x)
-        .append("text")
-          .attr("transform", "translate(" + (w_adj / 2) + "," + "0)")
-          .attr("dy", margins.bottom)
-          .text(labels.x);*/
-      
-      let y = d3.scaleLinear().domain([0,d3.max(this.dataset.y)]).range([this.size.height,0])
-      let x = d3.scaleLinear().domain([0,d3.max(this.dataset.x)]).range([0, this.size.width])
-      let yaxis = d3.axisLeft(y).ticks(4).tickFormat((d) => d)
-      let xaxis = d3.axisBottom(x).ticks(4).tickFormat((d) => d)
-      let axis = d3.select("g").append("g").attr("class", "y-axis")
-          .call(yaxis)
-      axis.append("g").attr("class", "x-axis")
-          .attr("transform", `translate(180)`)
-          .call(xaxis)
-      return axis
+    }
+  },
+  created: function () {
+    if (this.sizeProp) {
+      this.size = this.sizeProp
     }
   },
   beforeMount: function () {
-    this.axes = this.createAxes()
+    this.createAxes()
   },
   components: {
     LineChart
